@@ -1,5 +1,6 @@
 import ROOT
 import sys,os
+import math
 
 # For extrapolating from cross-section versus mass limits
 def find_limit(mass, indict, subval = "") :
@@ -111,38 +112,44 @@ for width in ["res","0p05","0p07","0p10"] :
 
   for model in ["DMsA","DMsV"] :
 
-    excluded = ROOT.TGraph()
-    not_excluded = ROOT.TGraph()
+    for coupling in [0.10,0.25] :
 
-    for point in fullDict.keys() :
+      excluded = ROOT.TGraph()
+      not_excluded = ROOT.TGraph()
 
-      info = fullDict[point]
+      for point in fullDict.keys() :
 
-      # Skip if not the model we want
-      if not model in info['model'] :
-        continue
+        info = fullDict[point]
 
-      mMed = info['mmed']
-      mDM = info['mdm']
+        # Skip if not the model we want
+        if not model in info['model'] :
+          continue
 
-      # Something odd going on with overlapping points. Cross check
-      #if "res" in width and 699 < mMed and mMed < 701 and mDM < 50 :
-      #  print "in point!"
-      #  print point, info
-      # Difference: DMsV versus DMsA. Forgot that here?
+        # Skip if not the coupling we want
+        if not math.fabs(coupling - info['gq'] < 0.01) :
+          continue
 
-      if not width in info['results'].keys() :
-        continue
+        mMed = info['mmed']
+        mDM = info['mdm']
 
-      did_exclude = info['results'][width]
+        # Something odd going on with overlapping points. Cross check
+        #if "res" in width and 699 < mMed and mMed < 701 and mDM < 50 :
+        #  print "in point!"
+        #  print point, info
+        # Difference: DMsV versus DMsA. Forgot that here?
 
-      if did_exclude :
-        excluded.SetPoint(excluded.GetN(),mMed,mDM)
-      else :
-        not_excluded.SetPoint(not_excluded.GetN(),mMed,mDM)
+        if not width in info['results'].keys() :
+          continue
 
-    excluded.Write("excluded_using_gaussians_{0}_{1}".format(model,width))
-    not_excluded.Write("not_excluded_using_gaussians_{0}_{1}".format(model,width))
+        did_exclude = info['results'][width]
+
+        if did_exclude :
+          excluded.SetPoint(excluded.GetN(),mMed,mDM)
+        else :
+          not_excluded.SetPoint(not_excluded.GetN(),mMed,mDM)
+
+      excluded.Write("excluded_using_gaussians_{0}_{1}_gq{2}".format(model,width,coupling))
+      not_excluded.Write("not_excluded_using_gaussians_{0}_{1}_gq{2}".format(model,width,coupling))
 
 outfile.Close()
 
