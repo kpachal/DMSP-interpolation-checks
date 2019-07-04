@@ -100,11 +100,46 @@ for point in paramDict.keys() :
   localDict['theory'] = theory
   localDict['limits'] = limits_dict
   localDict['results'] = results_dict
-  print localDict
+  #print localDict
   fullDict[point] = localDict
-
 
 # Using same limit for all (same Gaussian width, etc):
 # Make TGraph of points which are in and points which are out
+outfile = ROOT.TFile.Open("results_gaussians.root",'RECREATE')
+outfile.cd()
+for width in ["res","0p05","0p07","0p10"] :
+
+  excluded = ROOT.TGraph()
+  not_excluded = ROOT.TGraph()
+
+  for point in fullDict.keys() :
+
+    info = fullDict[point]
+
+    mMed = info['mmed']
+    mDM = info['mdm']
+
+    if not width in info['results'].keys() :
+      continue
+
+    did_exclude = info['results'][width]
+
+    if did_exclude :
+      excluded.SetPoint(excluded.GetN(),mMed,mDM)
+    else :
+      not_excluded.SetPoint(not_excluded.GetN(),mMed,mDM)
+
+  excluded.Write("excluded_using_gaussians_{0}".format(width))
+  not_excluded.Write("not_excluded_using_gaussians_{0}".format(width))
+
+outfile.Close()
 
 #Mix?
+
+
+
+
+
+
+
+
