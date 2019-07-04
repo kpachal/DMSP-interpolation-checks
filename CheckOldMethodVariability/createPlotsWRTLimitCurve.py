@@ -109,28 +109,40 @@ outfile = ROOT.TFile.Open("results_gaussians.root",'RECREATE')
 outfile.cd()
 for width in ["res","0p05","0p07","0p10"] :
 
-  excluded = ROOT.TGraph()
-  not_excluded = ROOT.TGraph()
+  for model in ["DMsA","DMsV"] :
 
-  for point in fullDict.keys() :
+    excluded = ROOT.TGraph()
+    not_excluded = ROOT.TGraph()
 
-    info = fullDict[point]
+    for point in fullDict.keys() :
 
-    mMed = info['mmed']
-    mDM = info['mdm']
+      info = fullDict[point]
 
-    if not width in info['results'].keys() :
-      continue
+      # Skip if not the model we want
+      if not model in info['model'] :
+        continue
 
-    did_exclude = info['results'][width]
+      mMed = info['mmed']
+      mDM = info['mdm']
 
-    if did_exclude :
-      excluded.SetPoint(excluded.GetN(),mMed,mDM)
-    else :
-      not_excluded.SetPoint(not_excluded.GetN(),mMed,mDM)
+      # Something odd going on with overlapping points. Cross check
+      #if "res" in width and 699 < mMed and mMed < 701 and mDM < 50 :
+      #  print "in point!"
+      #  print point, info
+      # Difference: DMsV versus DMsA. Forgot that here?
 
-  excluded.Write("excluded_using_gaussians_{0}".format(width))
-  not_excluded.Write("not_excluded_using_gaussians_{0}".format(width))
+      if not width in info['results'].keys() :
+        continue
+
+      did_exclude = info['results'][width]
+
+      if did_exclude :
+        excluded.SetPoint(excluded.GetN(),mMed,mDM)
+      else :
+        not_excluded.SetPoint(not_excluded.GetN(),mMed,mDM)
+
+    excluded.Write("excluded_using_gaussians_{0}_{1}".format(model,width))
+    not_excluded.Write("not_excluded_using_gaussians_{0}_{1}".format(model,width))
 
 outfile.Close()
 

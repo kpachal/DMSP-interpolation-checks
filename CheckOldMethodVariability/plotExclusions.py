@@ -8,26 +8,28 @@ infile = ROOT.TFile.Open("results_gaussians.root","READ")
 
 for width in ["res","0p05","0p07","0p10"] :
 
-  excluded = infile.Get("excluded_using_gaussians_{0}".format(width))
-  not_excluded = infile.Get("not_excluded_using_gaussians_{0}".format(width))
+  for model in ["DMsA","DMsV"] :
 
-  # Format
-  excluded.SetMarkerStyle(20)
-  excluded.SetMarkerColor(ROOT.kBlue)
-  excluded.SetMarkerSize(1.5)
+    excluded = infile.Get("excluded_using_gaussians_{0}_{1}".format(model,width))
+    not_excluded = infile.Get("not_excluded_using_gaussians_{0}_{1}".format(model,width))
 
-  not_excluded.SetMarkerStyle(24)
-  not_excluded.SetMarkerColor(ROOT.kRed)
-  not_excluded.SetMarkerSize(2)
+    # Format
+    excluded.SetMarkerStyle(20)
+    excluded.SetMarkerColor(ROOT.kBlue)
+    excluded.SetMarkerSize(1.5)
 
-  # For plotting
-  excluded.GetYaxis().SetRangeUser(0,1200)
-  excluded.GetXaxis().SetRangeUser(0,1200)
+    not_excluded.SetMarkerStyle(24)
+    not_excluded.SetMarkerColor(ROOT.kRed)
+    not_excluded.SetMarkerSize(2)
 
-  c = ROOT.TCanvas("c",'',0,0,800,600)
-  excluded.Draw("AP")
-  not_excluded.Draw("P SAME")
+    # For plotting
+    excluded.GetYaxis().SetRangeUser(0,1200)
+    excluded.GetXaxis().SetRangeUser(0,1200)
 
-  c.Update()
-  c.SaveAs("plots/exclusion_width_{0}.eps".format(width))
+    c = ROOT.TCanvas("c",'',0,0,800,600)
+    excluded.Draw("AP")
+    not_excluded.Draw("P SAME")
+
+    c.Update()
+    c.SaveAs("plots/exclusion_width_{0}_{1}.eps".format(model,width))
 
