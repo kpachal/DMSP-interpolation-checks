@@ -3,6 +3,9 @@ import sys
 sys.path.insert(0, '/afs/cern.ch/work/k/kpachal/PythonModules/art/')
 import AtlasStyle
 
+AtlasStyle.SetAtlasStyle()
+ROOT.gROOT.ForceStyle()
+
 # Want to compare 3 things:
 #  - points in the nose where there is disagreement: 
 #  - mMed = 750 & 800, mDM = 1.0, A-V plot couplints
@@ -19,8 +22,8 @@ infile_target = "/afs/cern.ch/work/k/kpachal/TLA2017/CleanLimitCode/inputs/signa
 # this correlates the two points on the x axis which we want to check 
 # to DSIDs
 DSIDtoMass = {
-300055 : {"mMed" : 750.0},
-300065 : {"mMed" : 800.0}
+310055 : {"mMed" : 750.0},
+310065 : {"mMed" : 800.0}
 }
 
 # Check both masses
@@ -42,8 +45,6 @@ for mass in ["0.75","0.8"] :
     if (DSIDtoMass[DSID]["mMed"] - mass_number)/mass_number < 0.01 :
       break
   open_target = ROOT.TFile.Open(infile_target.format(DSID))
-  print "opened ", infile_target.format(DSID)
-  open_target.ls()
   hist_target = open_target.Get("Nominal/mjj_Scaled_{0}_1fb".format(DSID))
   hist_target.SetDirectory(0)
   open_target.Close()
@@ -59,6 +60,7 @@ for mass in ["0.75","0.8"] :
   hist_narrow.SetLineWidth(2)
   hist_narrow.GetXaxis().SetTitle("Mass [GeV]")
   hist_narrow.GetYaxis().SetTitle("A.U.")
+  hist_narrow.GetXaxis().SetRangeUser(mass_number*(0.5),mass_number*(1.4))
   hist_target.SetLineColor(ROOT.kMagenta+1)
   hist_target.SetLineWidth(2)
   hist_broad.SetLineColor(ROOT.kBlue)
