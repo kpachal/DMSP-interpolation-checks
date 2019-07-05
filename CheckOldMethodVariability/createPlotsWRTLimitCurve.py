@@ -95,12 +95,17 @@ for point in paramDict.keys() :
       excluded = True
     results_dict[key] = excluded
 
+  # Doing more similar to old method: 
+  # get acceptance by truncating histogram to 0.8 < M < 1.2
+  
+
+
   # Save everything in mosterdict
   localDict.update(params)
   localDict.update(xsec_info)
   localDict['theory'] = theory
   localDict['limits'] = limits_dict
-  localDict['results'] = results_dict
+  localDict['results_firstmethod'] = results_dict
   #print localDict
   fullDict[point] = localDict
 
