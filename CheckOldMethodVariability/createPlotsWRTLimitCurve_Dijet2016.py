@@ -26,20 +26,14 @@ def find_limit(mass, indict, subval = "") :
 # Get dictionary of all points' info by DSID
 import sys
 sys.path.insert(0, 'inputs/dictionaries/')
-from ParameterDict_DijetTLA_13TeV_Full2015 import paramDict_DijetTLA_13TeV_Full2015 as paramDict
-from XSecDict_DijetTLA_13TeV_Full2015 import signalCrossSectionDict as xsecDict
-from Acceptances_DijetTLA_13TeV2018_Full20152016_A2_y03 import thisdict as acc_A2_y03 
-from Acceptances_DijetTLA_13TeV2018_Full20152016_A2_y06 import thisdict as acc_A2_y06 
-from Acceptances_DijetTLA_13TeV2018_Full20152016_V2_y03 import thisdict as acc_V2_y03 
-from Acceptances_DijetTLA_13TeV2018_Full20152016_V2_y06 import thisdict as acc_V2_y06 
+from ParameterDict_DijetHighMass_13TeV_Full20152016 import paramDict_HighMass_13TeV_Full20152016 as paramDict
+from XSecDict_DijetHighMass_13TeV_Full20152016 import signalCrossSectionDict as xsecDict
+from Acceptances_DijetHighMass_13TeV_Full20152016_All import AcceptanceDict_DijetHighMass_13TeV_Full20152016 as acc_all
 
 # Get dictionary of Gaussian limits
-file_03 = open('inputs/limit_vals/TLA_gaussians_y03.txt', 'r')
-limits_03 = eval(file_03.read())
-file_03.close()
-file_06 = open('inputs/limit_vals/TLA_gaussians_y06.txt', 'r')
-limits_06 = eval(file_06.read())
-file_06.close()
+file_limits = open('inputs/limit_vals/HighMassDijet_gaussians.txt', 'r')
+limits = eval(file_limits.read())
+file_limits.close()
 
 fullDict = {}
 
@@ -54,34 +48,29 @@ for point in paramDict.keys() :
   # Get acceptance: stored by acceptance and model, so a little annoying
   mZP = params["mmed"]
   model = params["model"]
-  if mZP < 700 and "DMsA" in model :
-    accdict = acc_A2_y03
-  elif mZP > 700 and "DMsA" in model :
-    accdict = acc_A2_y06
-  elif mZP < 700 and "DMsV" in model :
-    accdict = acc_V2_y03
-  elif mZP > 700 and "DMsV" in model :
-    accdict = acc_V2_y06
 
-  if not point in accdict.keys() :
-#    print "No acceptance for",model,"point at mZP =",mZP," mDM =",params["mdm"]
+  if not point in acc_all.keys() :
+    print "No acceptance for",model,"point at mZP =",mZP," mDM =",params["mdm"]
     continue
-  acc = accdict[point]
+  acc = acc_all[point]
 
   # Calculate sigma * BR * A for each point, store as theory
-  # At this point, basically blending 0.3 and 0.6
+  # Check units before running....
   theory = xsec_info['xsec']*acc['acc']
+
+  mZP_TeV = mZP/1000.
 
   # Get possible limits to compare to
   limits_dict = {}
-  gauss_dict = limits_03 if mZP < 700 else limits_06
 
   # Didn't make points lower.
-  if mZP < 450 : continue
+#  if mZP < 450 : continue
 
-  #limit = find_limit(mZP,gauss_dict,"0p07")
+  if not mZP_TeV in limits.keys() :
+    print "No limit for mass",mZP
+    continue
 
-  my_limits = gauss_dict[mZP]
+  my_limits = limits[mZP_TeV]
   for key in my_limits.keys() :
     limits_dict[key] = my_limits[key]
 
@@ -98,26 +87,25 @@ for point in paramDict.keys() :
   # Doing more similar to old method: 
   # get acceptance by truncating histogram to 0.8 < M < 1.2
   
-
-
   # Save everything in mosterdict
   localDict.update(params)
   localDict.update(xsec_info)
   localDict['theory'] = theory
   localDict['limits'] = limits_dict
-  localDict['results_firstmethod'] = results_dict
+  localDict['results'] = results_dict
   #print localDict
   fullDict[point] = localDict
 
 # Using same limit for all (same Gaussian width, etc):
 # Make TGraph of points which are in and points which are out
-outfile = ROOT.TFile.Open("results_gaussians.root",'RECREATE')
+outfile = ROOT.TFile.Open("results_gaussians_highmassdijet.root",'RECREATE')
 outfile.cd()
-for width in ["res","0p05","0p07","0p10"] :
 
-  for model in ["DMsA","DMsV"] :
+for model in ["DMsA","DMsV"] :
 
-    for coupling in [0.10,0.25] :
+  for coupling in [0.10,0.25] :
+
+    for width in ["res","0p03","0p05","0p07","0p10","0p15"] :
 
       excluded = ROOT.TGraph()
       not_excluded = ROOT.TGraph()
@@ -131,17 +119,11 @@ for width in ["res","0p05","0p07","0p10"] :
           continue
 
         # Skip if not the coupling we want
-        if not math.fabs(coupling - info['gq'] < 0.01) :
+        if not math.fabs(coupling - info['gq']) < 0.01 :
           continue
 
         mMed = info['mmed']
         mDM = info['mdm']
-
-        # Something odd going on with overlapping points. Cross check
-        #if "res" in width and 699 < mMed and mMed < 701 and mDM < 50 :
-        #  print "in point!"
-        #  print point, info
-        # Difference: DMsV versus DMsA. Forgot that here?
 
         if not width in info['results'].keys() :
           continue

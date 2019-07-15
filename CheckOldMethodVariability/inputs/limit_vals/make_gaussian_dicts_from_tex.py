@@ -2,6 +2,10 @@ import ROOT
 
 outdict = {}
 
+# Unit conversion if need be
+# High mass dijet limits need to be scaled down.
+scaleBy = 1/1000.
+
 def hasNumbers(inputString):
   return any(char.isdigit() for char in inputString)
 
@@ -37,7 +41,7 @@ with open('HighMassDijet_gaussians_preformat.txt', 'r') as f:
       # It's a width
       else :
         width = dijet_widths[index-1]
-        outdict[mass][width] = number
+        outdict[mass][width] = number*scaleBy
 
 f = open("HighMassDijet_gaussians.txt","w")
 f.write( str(outdict) )
