@@ -131,7 +131,7 @@ for width in ["res","0p05","0p07","0p10"] :
           continue
 
         # Skip if not the coupling we want
-        if not math.fabs(coupling - info['gq'] < 0.01) :
+        if not math.fabs(coupling - info['gq']) < 0.01 :
           continue
 
         mMed = info['mmed']
