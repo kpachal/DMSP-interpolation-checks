@@ -2,6 +2,8 @@ import ROOT
 import sys,os
 import math
 
+tag = "_scaleAccForGaussians"
+
 # For extrapolating from cross-section versus mass limits
 def find_limit(mass, indict, subval = "") :
 
@@ -52,11 +54,22 @@ for point in paramDict.keys() :
   if not point in acc_all.keys() :
     print "No acceptance for",model,"point at mZP =",mZP," mDM =",params["mdm"]
     continue
-  acc = acc_all[point]
+  acc = acc_all[point]['acc']
+  # TODO remove me
+  if mZP < 1650 :
+    acc = acc * 0.95
+  elif mZP < 1800 :
+    acc = acc * 0.85
+  elif mZP < 2000 :
+    acc = acc * 0.7
+  elif mZP < 2250 :
+    acc = acc * 0.6
+  else :
+    acc = acc * 0.5
 
   # Calculate sigma * BR * A for each point, store as theory
   # Check units before running....
-  theory = xsec_info['xsec']*acc['acc']
+  theory = xsec_info['xsec']*acc
 
   mZP_TeV = mZP/1000.
 
@@ -98,7 +111,7 @@ for point in paramDict.keys() :
 
 # Using same limit for all (same Gaussian width, etc):
 # Make TGraph of points which are in and points which are out
-outfile = ROOT.TFile.Open("results_gaussians_highmassdijet.root",'RECREATE')
+outfile = ROOT.TFile.Open("results_gaussians_highmassdijet{0}.root".format(tag),'RECREATE')
 outfile.cd()
 
 for model in ["DMsA","DMsV"] :
